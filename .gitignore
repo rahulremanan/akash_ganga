@@ -1,2 +1,5 @@
-src/__pycache__
-.idea/*
+src/__pycache__/
+.idea/
+*.xml
+*.pyc
+data/

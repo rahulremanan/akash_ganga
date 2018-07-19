@@ -229,7 +229,6 @@ def row_generator(filepath):
     pass
 
 
-
 def move_files_according_to_txt(data_dir, dest_dir, extension, verbose):
 
     txt_filepath = os.path.join(data_dir, "EFIGI_attributes.txt")

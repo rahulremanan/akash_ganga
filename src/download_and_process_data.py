@@ -8,8 +8,8 @@ based on the Galaxy type.
 The image labeling is done using the t-values.
 
     t_val < -3 are classified elliptical galaxy.
-    t_val < 0 are classified lenticular galaxy.
-    t_val < 10 is classified as spiral galaxy.
+    -3< t_val < 0 are classified lenticular galaxy.
+    0< t_val < 10 is classified as spiral galaxy.
     t_val = 10 is classifier as irreugular galaxy.
     t_val = 11 is classfied as a dwarf galaxy.
 
@@ -317,9 +317,9 @@ def check_class(t_val):
         pass  # it was a string, not an int.
     if t_val < -3:
         return T.ELLIPTICAL
-    elif t_val < 0:
+    elif -3 < t_val < 0:
         return T.LENTICULAR
-    elif t_val < 10:
+    elif 0 < t_val < 10:
         return T.SPIRAL
     elif t_val == 10:
         return T.IRREGULAR

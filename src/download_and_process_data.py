@@ -283,9 +283,7 @@ def move_files_according_to_txt(txt_filepath = None,
 
         # move image from curr dir to new dir
         current_image_path = os.path.join(str(data_dir), str(image_dir) , str(image_fname))
-        print (current_image_path)
         dest_image_path = os.path.join(str(dest_dir), str(image_class) , str(image_fname))
-        print (dest_image_path)
         if os.path.exists(os.path.join(str(dest_dir), str(image_class))) !=True:
             make_folder(input_dir =  (os.path.join(str(dest_dir), str(image_class))), 
                 verbose = verbose)
@@ -383,7 +381,8 @@ def shuffle_data(train_folder = None,
     # Get total number of files in folder
     images = glob.glob(train_class_dir+"/*.png")
     total_num = len(images)
-    print (train_class_dir +" has " + str(total_num)+" images.")
+    if verbose:
+        print (train_class_dir +" has " + str(total_num)+" images.")
 
     # Shuffle 20% files
     number_of_validation = int(data_split*float(total_num)) # 20% validation

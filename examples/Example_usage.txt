@@ -1,0 +1,3 @@
+# Downloading data:
+
+$ python3 download_and_process_data.py --root_dir /home/rahulremanan/EFIGI

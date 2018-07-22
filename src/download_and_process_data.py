@@ -1,79 +1,63 @@
 # !/usr/bin/python
 """
-Dependencies:
+Dependencies: astropy
 
-download_and_sort_EIFIGI_raw_data.py
 Downloads EFIGI data and processes it into training and validataion folders
 based on the Galaxy type.
 
+The image labeling is done using the t-values.
 
-brew install wget
-pip install opencv-python
+    t_val < -3 are classified elliptical galaxy.
+    t_val < 0 are classified lenticular galaxy.
+    t_val < 10 is classified as spiral galaxy.
+    t_val = 10 is classifier as irreugular galaxy.
+    t_val = 11 is classfied as a dwarf galaxy.
 
+@authors: Avi Vajpeyi and Rahul Remanan
+@support: info@moad.computer
 
-Author: Avi Vajpeyi and Rahul Remanan
 """
 import shutil
 import glob
-import subprocess
-import cv2
+import argparse
 import os
 from enum import Enum, unique, auto
 # custom imports
 import fits_to_png
+import execute_in_shell
 
-
-def execute_in_shell(command=None, verbose=False):
+def is_valid_dir(parser, arg):
     """
-    This is a function that executes shell scripts from within python.
-
-    Example usage:
-    execute_in_shell(command = ['ls ./some/folder/',
-                                'ls ./some/folder/  -1 | wc -l'],
-                     verbose = True )
-
-    This command returns dictionary with elements: Output and Error.
-
-    Output records the console output,
-    Error records the console error messages.
-
-    :param command: takes a list of shell commands
-    :param verbose: takes a boolean value to set verbose level
-    :return: Dictionary with two elements Output and Error
+        This function checks if a directory exists or not.
+        It can be used inside the argument parser.
+        
+        Example usage: 
+            
+            import argsparse
+            
+            a = argparse.ArgumentParser()
+            a.add_argument("--dir_path", 
+                              help = "Check if a file exists in the specified file path ...", 
+                              dest = "file_path", 
+                              required=False,
+                              type=lambda x: is_valid_dir(a, x),
+                              nargs=1)
+            
+            args = a.parse_args()
+            
+            args = get_user_options() 
     """
-
-    error = []
-    output = []
-
-    if isinstance(command, list):
-        for i in range(len(command)):
-            try:
-                process = subprocess.Popen(command[i], shell=True,
-                                           stdout=subprocess.PIPE)
-                process.wait()
-                out, err = process.communicate()
-                error.append(err)
-                output.append(out)
-
-                if error[0] is not None:
-                    print("ERROR: running command {}".format(command[i]))
-                    print(err)
-                    exit(1)
-
-                if verbose:
-                    print('Success running shell command: {}'
-                          ''.format(command[i]))
-            except Exception as e:
-                print('Failed running shell command: {}'.format(command[i]))
-                if verbose:
-                    print(type(e))
-                    print(e.args)
-                    print(e)
-
+    if not os.path.isdir(arg):
+        try:
+            parser.error("The folder %s does not exist ..." % arg)
+        except:
+            if parser != None:
+                print ("No valid argument parser found")
+                print ("The folder %s does not exist ..." % arg)
+            else:
+                print ("The folder %s does not exist ..." % arg)
     else:
-        print('The argument command takes a list input ...')
-    return {'Output': output, 'Error': error}
-
+        return arg
 
 def download_data(data_dir, verbose=False):
     """
@@ -106,7 +90,7 @@ def download_data(data_dir, verbose=False):
     download_cmd = "wget -O {} {}"
     commands += [download_cmd.format(tgz_files[i], data_urls[i])
                  for i in range(len(tgz_files))]
-    return execute_in_shell(command=commands, verbose=verbose)
+    return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
 
 
 def unzip_tgz_files(tgz_dir, dest_dir, verbose=False):
@@ -125,7 +109,7 @@ def unzip_tgz_files(tgz_dir, dest_dir, verbose=False):
     commands = []
     for f in tgz_files:
         commands += ["tar xzf " + f + " -C "+dest_dir, "rm " + f]
-    return execute_in_shell(command=commands, verbose=verbose)
+    return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
 
 
 def convert_fits_to_png(fits_root_folder, fits_folders, verbose=False):
@@ -164,7 +148,7 @@ def zip_folder(folder_dir, zipped_filepath, verbose=False):
     :return:
     """
     commands = ["zip -r {} {}".format(zipped_filepath, folder_dir)]
-    return execute_in_shell(command=commands, verbose=verbose)
+    return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
 
 
 def download_and_process_raw_files(root_dir, verbose=False):
@@ -202,7 +186,7 @@ def make_folders_from_labels(root_dir, verbose=False):
     if verbose:
         commands += ['echo "Folders in ./data/train/:"']
         commands += ["!ls ./data/train/"]
-    execute_in_shell(commands)
+    execute_in_shell.execute_in_shell(commands)
 
 
 def row_generator(filepath):
@@ -267,9 +251,6 @@ def move_files_according_to_txt(data_dir, dest_dir, extension, verbose):
                 print("Image Num" + str(
                     count) + ": " + image_fname + " is a " + image_class)
 
-
-
-
 @unique
 class T(Enum):
     """
@@ -314,9 +295,19 @@ def check_class(t_val):
         # raise exception
         return None
 
-
-def main():
-    download_and_process_raw_files(root_dir="/Users/Vajpeyi/Documents/PostGraduation2018/MOADresearch/akash_ganga", verbose=True)
+def get_user_options():
+    a = argparse.ArgumentParser()
+    
+    a.add_argument("--root_dir", 
+                   help = "Specify the root directory ...", 
+                   dest = "root_dir", 
+                   required = True, 
+                   type=lambda x: is_valid_dir(a, x), 
+                   nargs=1)
+    args = a.parse_args()   
+    return args  
 
 if __name__=="__main__":
-    main()
+    args = get_user_options()
+    download_and_process_raw_files(root_dir=args.root_dir[0], \
+                                   verbose=True)

@@ -92,7 +92,8 @@ def is_valid_dir(parser, arg):
     else:
         return arg
 
-def download_data(data_dir, verbose=False):
+def download_data(data_dir, 
+                  verbose=False):
     """
 
     :param data_dir: the dir where the data will be saved  (eg ./data/raw/)
@@ -126,7 +127,9 @@ def download_data(data_dir, verbose=False):
     return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
 
 
-def unzip_tgz_files(tgz_dir, dest_dir, verbose=False):
+def unzip_tgz_files(tgz_dir, 
+                    dest_dir, 
+                    verbose=False):
     """
     The tgz files to be unzipped
 
@@ -145,7 +148,9 @@ def unzip_tgz_files(tgz_dir, dest_dir, verbose=False):
     return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
 
 
-def convert_fits_to_png(fits_root_folder, fits_folders, verbose=False):
+def convert_fits_to_png(fits_root_folder, 
+                        fits_folders, 
+                        verbose=False):
     """
 
 
@@ -184,7 +189,8 @@ def zip_folder(folder_dir, zipped_filepath, verbose=False):
     return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
 
 
-def download_and_process_raw_files(root_dir, verbose=False):
+def download_and_process_raw_files(root_dir, 
+                                   verbose=False):
     """
 
     :param root_dir:
@@ -218,8 +224,8 @@ def make_folders_from_labels(root_dir,
                      mk_val_fldr.format(label_class)]
 
     if verbose:
-        commands = commands.append(['echo "Folders in {}/train/:"'.format(root_dir)])
-        commands = commands.append(["ls {}/train/".format(root_dir)])
+        commands.append(['echo "Folders in {}/train/:"'.format(root_dir)])
+        commands.append(["ls {}/train/".format(root_dir)])
     execute_in_shell.execute_in_shell(command = commands, verbose = verbose)
 
 
@@ -270,21 +276,35 @@ def move_files_according_to_txt(txt_filepath = None,
 
         # get type according to dataset
         image_class = check_class(attributes[1])
-        image_class = image_class.name
+        try:
+            image_class = image_class.name
+        except:
+            print ("Failed to process image: {}".format(image_fname))
 
         # move image from curr dir to new dir
         current_image_path = os.path.join(str(data_dir), str(image_dir) , str(image_fname))
         print (current_image_path)
         dest_image_path = os.path.join(str(dest_dir), str(image_class) , str(image_fname))
         print (dest_image_path)
+        if os.path.exists(os.path.join(str(dest_dir), str(image_class))) !=True:
+            make_folder(input_dir =  (os.path.join(str(dest_dir), str(image_class))), 
+                verbose = verbose)
         if os.path.exists(current_image_path):
-            shutil.move(current_image_path, dest_image_path)
+            try:
+                shutil.move(current_image_path, dest_image_path)
+            except:
+                if verbose:
+                    print ("Failed to move: {}".format(current_image_path))
         else:
-            print ("File not found: {}".format(current_image_path))
+            if verbose:
+                print ("File not found: {}".format(current_image_path))
 
         count += 1
         if count % 100 == 0 and verbose:
-            print("Image Num" + str(count) + ": " + image_fname + " is a " + image_class)
+            try:
+                print("Found a total of: " + str(count) + ": images " + image_fname + "belonging to the image class: " + image_class)
+            except:
+                print ("Failed processing image class {}".format(image_class))
 
 @unique
 class T(Enum):
@@ -330,23 +350,31 @@ def check_class(t_val):
         # raise exception
     return None
 
-def make_folder(input_dir):
+def make_folder(input_dir = None, 
+                verbose = False):
     try:
         if not os.path.exists(input_dir):
             os.makedirs(input_dir)
-    except OSError:
+            if verbose:
+                return 'Sucessfully created the folder {}'.format(input_dir)
+    except OSError as err:
         print ('Failed to create directory: {} ...'.format(input_dir))
+        print ('Encountered an error {}'.format(err.args))
     
 def shuffle_data(train_folder = None, 
                  validation_folder = None, 
-                 data_split = None):
+                 data_split = None,
+                 verbose = False):
   if 0<data_split<1:
     data_split = data_split
-    print ("Training data generated using default train-validation split of {}% ... ".format(data_split*100))
+    if verbose:
+        print ("Training data generated using default train-validation split of {}% ... ".format(data_split*100))
   else:
-    print ('Please input a data_split value between 0 and 1 ...')
+    if verbose:
+        print ('Please input a data_split value between 0 and 1 ...')
     data_split = 0.2
-    print ('Training data generated using default train-validation split of 20% ...')
+    if verbose:
+        print ('Training data generated using default train-validation split of 20% ...')
   subfolders = [f.path for f in os.scandir(train_folder) if f.is_dir()] 
 
   # For each training folder 
@@ -367,11 +395,13 @@ def shuffle_data(train_folder = None,
     # Move 20% to the validation folder of the same class
     for file_dir in files_to_move:
       destination_dir = file_dir.split("/train/")[0]+"/validation/"+file_dir.split("/train/")[-1]
-      make_folder(destination_dir)
+      make_folder(input_dir = destination_dir,
+                  verbose = verbose)
       shutil.move(file_dir, destination_dir)
 
     num_images_remaining = len(glob.glob(train_class_dir+"/*.png"))
-    print ("After transfer " + str(num_images_remaining)+" images will remain in the training folder.\n")
+    if verbose:
+        print ("After transfer " + str(num_images_remaining)+" images will remain in the training folder.\n")
   return None
 
 
@@ -389,6 +419,14 @@ def get_user_options():
                    help = "Specify whether raw data should be downloaded from EFIGI project website ...", 
                    dest = "fetch_raw_data", 
                    required = True, 
+                   default = [True],
+                   type=string_to_bool, 
+                   nargs=1)
+    
+    a.add_argument("--verbose", 
+                   help = "Specify versboe level ...", 
+                   dest = "verbose", 
+                   required = False, 
                    default = [True],
                    type=string_to_bool, 
                    nargs=1)
@@ -413,15 +451,19 @@ def get_user_options():
 
 if __name__=="__main__":
     args = get_user_options()
+    verbose = args.verbose[0]
+    if os.path.exists(args.root_dir[0]) != True:
+        print ("Invalid root folder for processing the EFIGI data ...")
+        sys.exit(1)
     if args.fetch_raw_data[0]:
         download_and_process_raw_files(root_dir=args.root_dir[0], \
-                                       verbose=True)
+                                       verbose=verbose)
     image_folders = ["png","ima_g", "ima_i", "ima_u", "ima_z", "ima_r"]
     extensions =[None, "g","i","u","z","r"]
 
     if args.create_train_data[0]:
       make_folders_from_labels(args.root_dir[0], 
-                               verbose=False,
+                               verbose=verbose,
                                label_classes = [name for name, _ in T.__members__.items()])
       for i in range(0,len(extensions)):
           move_files_according_to_txt(txt_filepath = "{}/data/raw/efigi-1.6/EFIGI_attributes.txt".format(args.root_dir[0]),
@@ -429,8 +471,9 @@ if __name__=="__main__":
                                       data_dir = "{}/data/raw/efigi-1.6/".format(args.root_dir[0]), 
                                       dest_dir = "{}/train".format(args.root_dir[0]), 
                                       extensions = extensions[i], 
-                                      verbose = True)
+                                      verbose = verbose)
           
       shuffle_data(train_folder = os.path.join(args.root_dir[0]+'/train/'),
                    validation_folder = os.path.join(args.root_dir[0]+'/validation/'),
-                   data_split = args.data_split[0])
+                   data_split = args.data_split[0],
+                   verbose = verbose)

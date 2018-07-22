@@ -22,6 +22,7 @@ import glob
 import argparse
 import os
 import random
+import sys
 from enum import Enum, unique, auto
 
 # custom imports
@@ -334,6 +335,7 @@ def check_class(t_val):
     try:
         t_val = int(t_val)
     except ValueError:
+        print ("Error: Inavlid t_val ...")
         pass  # it was a string, not an int.
     if t_val < -3:
         return T.ELLIPTICAL
@@ -346,7 +348,7 @@ def check_class(t_val):
     elif t_val == 11:
         return T.DWARF
     else:
-        print("ERROR")
+        print("Error: Unexpected range for t_val {} ...".format(t_val))
         # raise exception
     return None
 
@@ -395,13 +397,16 @@ def shuffle_data(train_folder = None,
     # Move 20% to the validation folder of the same class
     for file_dir in files_to_move:
       destination_dir = file_dir.split("/train/")[0]+"/validation/"+file_dir.split("/train/")[-1]
-      make_folder(input_dir = destination_dir,
-                  verbose = verbose)
+      if os.path.exists(destination_dir) !=True:
+            make_folder(input_dir = destination_dir,
+                        verbose = verbose)
       shutil.move(file_dir, destination_dir)
 
-    num_images_remaining = len(glob.glob(train_class_dir+"/*.png"))
+    num_train_images = len(glob.glob(train_class_dir+"/*.png"))
+    num_val_images = len(glob.glob(destination_dir+"/*.png"))
     if verbose:
-        print ("After transfer " + str(num_images_remaining)+" images will remain in the training folder.\n")
+        print ("After transfering {} images for validation \n\
+               {} images will remain in the training folder ...".format(num_val_images, num_train_images))
   return None
 
 

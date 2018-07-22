@@ -21,10 +21,43 @@ import shutil
 import glob
 import argparse
 import os
+import random
 from enum import Enum, unique, auto
+
 # custom imports
 import fits_to_png
 import execute_in_shell
+
+def string_to_bool(val):
+    """
+        A function that checks if an user argument is boolean or not.
+        
+        Example usage:
+            
+            
+                import argsparse
+            
+                a = argparse.ArgumentParser()
+                
+                a.add_argument("--some_bool_arg", 
+                   help = "Specify a boolean argument ...", 
+                   dest = "some_bool_arg", 
+                   required=False, 
+                   default=[True], 
+                   nargs=1, 
+                   type = string_to_bool)
+                
+            args = a.parse_args()
+            
+            args = get_user_options()
+            
+    """
+    if val.lower() in ('yes', 'true', 't', 'y', '1', 'yeah', 'yup'):
+        return True
+    elif val.lower() in ('no', 'false', 'f', 'n', '0', 'none', 'nope'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected ...')
 
 def is_valid_dir(parser, arg):
     """
@@ -128,12 +161,12 @@ def convert_fits_to_png(fits_root_folder, fits_folders, verbose=False):
         fits_dir = os.path.join(fits_root_folder, fits_folder)
         try:
             fits_to_png.fits_folder_to_png(fits_dir=fits_dir,
-                                           make_vid=True,
+                                           make_vid=False,
                                            delete_fits=True,
                                            verbose=verbose)
         except NameError:
             fits_folder_to_png(fits_dir=fits_dir,
-                               make_vid=True,
+                               make_vid=False,
                                delete_fits=True,
                                verbose=verbose)
 
@@ -170,23 +203,24 @@ def download_and_process_raw_files(root_dir, verbose=False):
     convert_fits_to_png(unzipped_data_dir, fits_folders, verbose)
 
 
-def make_folders_from_labels(root_dir, verbose=False):
+def make_folders_from_labels(root_dir, 
+                             verbose=False, 
+                             label_classes = None):
 
     if verbose:
         print("Make Organisational Folders")
 
-    label_classes = [name for name, _ in T.__members__.items()]
-    mk_train_fldr = "mkdir -p {}/data/train/".format(root_dir) + "{}"
-    mk_val_fldr = "mkdir -p {}/data/validation/".format(root_dir) + "{}"
+    mk_train_fldr = "mkdir -p {}/train/".format(root_dir) + "{}"
+    mk_val_fldr = "mkdir -p {}/validation/".format(root_dir) + "{}"
     commands = []
     for label_class in label_classes:
-        commands += [mk_train_fldr.format(label_class),
+        commands = [mk_train_fldr.format(label_class),
                      mk_val_fldr.format(label_class)]
 
     if verbose:
-        commands += ['echo "Folders in ./data/train/:"']
-        commands += ["!ls ./data/train/"]
-    execute_in_shell.execute_in_shell(commands)
+        commands = commands.append(['echo "Folders in {}/train/:"'.format(root_dir)])
+        commands = commands.append(["ls {}/train/".format(root_dir)])
+    execute_in_shell.execute_in_shell(command = commands, verbose = verbose)
 
 
 def row_generator(filepath):
@@ -214,42 +248,43 @@ def row_generator(filepath):
 
 
 
-def move_files_according_to_txt(data_dir, dest_dir, extension, verbose):
+def move_files_according_to_txt(txt_filepath = None,
+                                image_folders = None,
+                                data_dir = None, 
+                                dest_dir = None, 
+                                extensions = None, 
+                                verbose = None):
+    image_dir = image_folders
+    extension = extensions
+    if verbose:
+        print("Moving images from " + image_folders)
+    count = 0
+    for line in row_generator(txt_filepath):
+        attributes = line.split()
 
-    txt_filepath = os.path.join(data_dir, "EFIGI_attributes.txt")
-    extensions = [None, "g", "i", "u", "z", "r"]
-    image_folders = ["png", "ima_g", "ima_i", "ima_u", "ima_z", "ima_r"]
-    image_dirs = [os.path.join(data_dir, f) for f in image_folders]
+        # create file name based on PGC_name
+        if extension is None:
+            image_fname = attributes[0] + ".png"
+        else:
+            image_fname = attributes[0] + "_" + extension + ".png"
 
-    for i in range(len(extensions)):
+        # get type according to dataset
+        image_class = check_class(attributes[1])
+        image_class = image_class.name
 
-        image_dir = image_dirs[i]
-        extension = extensions[i]
-        if verbose:
-            print("Moving images from " + image_folders[i])
-        count = 0
-        for line in row_generator(txt_filepath):
-            attributes = line.split()
-
-            # create file name based on PGC_name
-            if extension is None:
-                image_fname = attributes[0] + ".png"
-            else:
-                image_fname = attributes[0] + "_" + extension + ".png"
-
-            # get type according to dataset
-            image_class = check_class(attributes[1])
-            image_class = image_class.name
-
-            # move image from curr dir to new dir
-            current_image_path = os.path.join(image_dir, image_fname)
-            dest_image_path = os.path.join(dest_dir, image_class, image_fname)
+        # move image from curr dir to new dir
+        current_image_path = os.path.join(str(data_dir), str(image_dir) , str(image_fname))
+        print (current_image_path)
+        dest_image_path = os.path.join(str(dest_dir), str(image_class) , str(image_fname))
+        print (dest_image_path)
+        if os.path.exists(current_image_path):
             shutil.move(current_image_path, dest_image_path)
+        else:
+            print ("File not found: {}".format(current_image_path))
 
-            count += 1
-            if count % 100 == 0 and verbose:
-                print("Image Num" + str(
-                    count) + ": " + image_fname + " is a " + image_class)
+        count += 1
+        if count % 100 == 0 and verbose:
+            print("Image Num" + str(count) + ": " + image_fname + " is a " + image_class)
 
 @unique
 class T(Enum):
@@ -293,7 +328,52 @@ def check_class(t_val):
     else:
         print("ERROR")
         # raise exception
-        return None
+    return None
+
+def make_folder(input_dir):
+    try:
+        if not os.path.exists(input_dir):
+            os.makedirs(input_dir)
+    except OSError:
+        print ('Failed to create directory: {} ...'.format(input_dir))
+    
+def shuffle_data(train_folder = None, 
+                 validation_folder = None, 
+                 data_split = None):
+  if 0<data_split<1:
+    data_split = data_split
+    print ("Training data generated using default train-validation split of {}% ... ".format(data_split*100))
+  else:
+    print ('Please input a data_split value between 0 and 1 ...')
+    data_split = 0.2
+    print ('Training data generated using default train-validation split of 20% ...')
+  subfolders = [f.path for f in os.scandir(train_folder) if f.is_dir()] 
+
+  # For each training folder 
+  for train_class_dir in subfolders:
+
+    # Get total number of files in folder
+    images = glob.glob(train_class_dir+"/*.png")
+    total_num = len(images)
+    print (train_class_dir +" has " + str(total_num)+" images.")
+
+    # Shuffle 20% files
+    number_of_validation = int(data_split*float(total_num)) # 20% validation
+    files_to_move = random.sample(images, number_of_validation)
+
+
+    class_name = train_class_dir.split("/")[-1]
+
+    # Move 20% to the validation folder of the same class
+    for file_dir in files_to_move:
+      destination_dir = file_dir.split("/train/")[0]+"/validation/"+file_dir.split("/train/")[-1]
+      make_folder(destination_dir)
+      shutil.move(file_dir, destination_dir)
+
+    num_images_remaining = len(glob.glob(train_class_dir+"/*.png"))
+    print ("After transfer " + str(num_images_remaining)+" images will remain in the training folder.\n")
+  return None
+
 
 def get_user_options():
     a = argparse.ArgumentParser()
@@ -304,10 +384,53 @@ def get_user_options():
                    required = True, 
                    type=lambda x: is_valid_dir(a, x), 
                    nargs=1)
+    
+    a.add_argument("--fetch_raw_data", 
+                   help = "Specify whether raw data should be downloaded from EFIGI project website ...", 
+                   dest = "fetch_raw_data", 
+                   required = True, 
+                   default = [True],
+                   type=string_to_bool, 
+                   nargs=1)
+    
+    a.add_argument("--create_train_data", 
+                   help = "Specify whether to generate training data ...", 
+                   dest = "create_train_data", 
+                   required = True, 
+                   default = [True],
+                   type=string_to_bool, 
+                   nargs=1)
+    
+    a.add_argument("--data_split", 
+                   help = "Specify the validation:train split ...", 
+                   dest = "data_split", 
+                   required = True, 
+                   default = [0.2],
+                   type=float, 
+                   nargs=1)
     args = a.parse_args()   
     return args  
 
 if __name__=="__main__":
     args = get_user_options()
-    download_and_process_raw_files(root_dir=args.root_dir[0], \
-                                   verbose=True)
+    if args.fetch_raw_data[0]:
+        download_and_process_raw_files(root_dir=args.root_dir[0], \
+                                       verbose=True)
+    image_folders = ["png","ima_g", "ima_i", "ima_u", "ima_z", "ima_r"]
+    extensions =[None, "g","i","u","z","r"]
+
+    if args.create_train_data[0]:
+      make_folders_from_labels(args.root_dir[0], 
+                               verbose=False,
+                               label_classes = [name for name, _ in T.__members__.items()])
+      for i in range(0,len(extensions)):
+          move_files_according_to_txt(txt_filepath = "{}/data/raw/efigi-1.6/EFIGI_attributes.txt".format(args.root_dir[0]),
+                                      image_folders = image_folders[i],
+                                      data_dir = "{}/data/raw/efigi-1.6/".format(args.root_dir[0]), 
+                                      dest_dir = "{}/train".format(args.root_dir[0]), 
+                                      extensions = extensions[i], 
+                                      verbose = True)
+          
+      shuffle_data(train_folder = os.path.join(args.root_dir[0]+'/train/'),
+                   validation_folder = os.path.join(args.root_dir[0]+'/validation/'),
+                   data_split = args.data_split[0])

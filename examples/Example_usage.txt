@@ -1,3 +1,7 @@
 # Downloading data:
 
-$ python3 download_and_process_data.py --root_dir /home/rahulremanan/EFIGI --fetch_raw_dataTrue --create_train_data True --data_split 0.3
+$ python3 download_and_process_data.py --root_dir /home/rahulremanan/EFIGI \
+                                       --fetch_raw_data True \
+                                       --create_train_data True \
+                                       --data_split 0.3 \
+                                       --verbose False

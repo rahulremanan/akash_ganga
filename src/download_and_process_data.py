@@ -8,8 +8,8 @@ based on the Galaxy type.
 The image labeling is done using the t-values.
 
     t_val < -3 are classified elliptical galaxy.
-    -3< t_val < 0 are classified lenticular galaxy.
-    0< t_val < 10 is classified as spiral galaxy.
+    -3 <= t_val < 0 are classified lenticular galaxy.
+    0 <= t_val < 10 is classified as spiral galaxy.
     t_val = 10 is classifier as irreugular galaxy.
     t_val = 11 is classfied as a dwarf galaxy.
 
@@ -24,7 +24,6 @@ import os
 import random
 import sys
 from enum import Enum, unique, auto
-
 # custom imports
 import fits_to_png
 import execute_in_shell
@@ -84,12 +83,15 @@ def is_valid_dir(parser, arg):
     if not os.path.isdir(arg):
         try:
             parser.error("The folder %s does not exist ..." % arg)
+            return None
         except:
             if parser != None:
                 print ("No valid argument parser found")
                 print ("The folder %s does not exist ..." % arg)
+                return None
             else:
                 print ("The folder %s does not exist ..." % arg)
+                return None
     else:
         return arg
 
@@ -107,14 +109,13 @@ def download_data(data_dir,
     commands = ["mkdir -p " + data_dir]
 
     # the download URL for the data
-    data_urls = [
-         "https://www.astromatic.net/download/efigi/efigi_tables-1.6.2.tgz",
-         "https://www.astromatic.net/download/efigi/efigi_png_gri-1.6.tgz",
-         "https://www.astromatic.net/download/efigi/efigi_ima_u-1.6.tgz",
-         "https://www.astromatic.net/download/efigi/efigi_ima_g-1.6.tgz",
-         "https://www.astromatic.net/download/efigi/efigi_ima_r-1.6.tgz",
-         "https://www.astromatic.net/download/efigi/efigi_ima_i-1.6.tgz",
-         "https://www.astromatic.net/download/efigi/efigi_ima_z-1.6.tgz"]
+    data_urls = ["https://www.astromatic.net/download/efigi/efigi_tables-1.6.2.tgz",
+                 "https://www.astromatic.net/download/efigi/efigi_png_gri-1.6.tgz",
+                 "https://www.astromatic.net/download/efigi/efigi_ima_u-1.6.tgz",
+                 "https://www.astromatic.net/download/efigi/efigi_ima_g-1.6.tgz",
+                 "https://www.astromatic.net/download/efigi/efigi_ima_r-1.6.tgz",
+                 "https://www.astromatic.net/download/efigi/efigi_ima_i-1.6.tgz",
+                 "https://www.astromatic.net/download/efigi/efigi_ima_z-1.6.tgz"]
     # the file names and paths after downloading
     tgz_files = [data_dir + "efigi-1.6.tgz",
                  data_dir + "efigi_pics.tgz",   data_dir + "efigi_u_pics.tgz",
@@ -253,8 +254,6 @@ def row_generator(filepath):
 
     pass
 
-
-
 def move_files_according_to_txt(txt_filepath = None,
                                 image_folders = None,
                                 data_dir = None, 
@@ -325,7 +324,6 @@ class T(Enum):
         """
         return str(self.name)
 
-
 def check_class(t_val):
     """
     Takes the t_val attribute and returns the associated enum
@@ -339,9 +337,9 @@ def check_class(t_val):
         pass  # it was a string, not an int.
     if t_val < -3:
         return T.ELLIPTICAL
-    elif -3 < t_val < 0:
+    elif -3 <= t_val < 0:
         return T.LENTICULAR
-    elif 0 < t_val < 10:
+    elif 0 <= t_val < 10:
         return T.SPIRAL
     elif t_val == 10:
         return T.IRREGULAR
@@ -391,7 +389,6 @@ def shuffle_data(train_folder = None,
     number_of_validation = int(data_split*float(total_num)) # 20% validation
     files_to_move = random.sample(images, number_of_validation)
 
-
     class_name = train_class_dir.split("/")[-1]
 
     # Move 20% to the validation folder of the same class
@@ -405,10 +402,9 @@ def shuffle_data(train_folder = None,
     num_train_images = len(glob.glob(train_class_dir+"/*.png"))
     num_val_images = len(glob.glob(destination_dir+"/*.png"))
     if verbose:
-        print ("After transfering {} images for validation \n\
-               {} images will remain in the training folder ...".format(num_val_images, num_train_images))
+        print ("After transfering {} images for validation \
+               \n{} images will remain in the training folder ...".format(num_val_images, num_train_images))
   return None
-
 
 def get_user_options():
     a = argparse.ArgumentParser()
@@ -457,8 +453,9 @@ def get_user_options():
 if __name__=="__main__":
     args = get_user_options()
     verbose = args.verbose[0]
-    if os.path.exists(args.root_dir[0]) != True:
-        print ("Invalid root folder for processing the EFIGI data ...")
+    if args.root_dir[0] == None:
+        print ("Invalid root folder for processing the EFIGI data ... \
+               \nPlease specify a valid root folder using root_dir argument ...")
         sys.exit(1)
     if args.fetch_raw_data[0]:
         download_and_process_raw_files(root_dir=args.root_dir[0], \

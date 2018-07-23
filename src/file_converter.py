@@ -17,13 +17,14 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 import numpy as np
 import glob
-import cv2
 import os
 import sys
 import argparse
+# custom import
+import create_video
 
-
-def fits_to_png(fits_fn):
+def fits_to_png(fits_fn, 
+                delete_fits=False):
     """
     Converts the FITS file into a PNG image.
     Assumes that the image information is located in the Primary HDU of the
@@ -54,11 +55,14 @@ def fits_to_png(fits_fn):
     plt.savefig(png_fn, dpi=height)
     plt.close()
 
+    if delete_fits:
+        os.remove(fits_fn)
     pass
 
-
 def fits_folder_to_png(fits_dir,
-                       make_vid=False, delete_fits=False, verbose=False):
+                       make_vid=False, 
+                       delete_fits=False, 
+                       verbose=False):
     """
     Converts all the FITS file in a dir to PNG images. Can also make a movie of
     the PNGs and can delete the FITS after processing complete.
@@ -70,65 +74,38 @@ def fits_folder_to_png(fits_dir,
     :return: None
     """
     if verbose:
-        print("FITS-->PNG")
+        print("FITS-->PNG for " + fits_dir.split('/')[-1])
 
-    fits_files = glob.glob(fits_dir + "*.fits")
+    fits_files = glob.glob(os.path.join(fits_dir,  "*.fits"))
     num_files = len(fits_files)
     status_flag = num_files * 0.1
 
     for i in range(0, num_files):
-        fits_to_png(fits_files[i])
+        fits_to_png(fits_files[i], delete_fits)
 
         if verbose and i > status_flag:
             status_flag += num_files * 0.1
             p_done = i / num_files * 100
-            print(str(round(p_done,2)) + "% processed")
+            print(str(round(p_done, 2)) + "% processed")
 
     if make_vid:
-        vid_fname = make_movie_from_png(fits_dir)
-        if verbose:
-            print("Successfully saved video " + vid_fname)
-    if delete_fits:
-        delete_fits_from_folder(fits_dir)
-        if verbose:
-            print("Deleted fits files from " + fits_dir)
-
+        vid_made = create_video.make_movie_from_png(fits_dir)
+        if verbose and vid_made:
+            print("Successfully saved video")
     pass
-
 
 def delete_fits_from_folder(fits_dir):
     """
     Deletes the FITS files from fits_dir
     :param fits_dir: The dir containing the FITS files
-    :return: None
+    :return: True if successfully removed else False
     """
-    fits_files = glob.glob(fits_dir + "*.fits")
-    for f in fits_files:
-        os.remove(f)
-
-
-def make_movie_from_png(png_dir):
-    """
-    Takes PNG image files from a dir and combines them to make a movie
-    :param png_dir: The dir with the PNG
-    :return:
-    """
-    vid_filename = os.path.basename(os.path.dirname(png_dir)) + ".avi"
-    vid_filepath = os.path.join(png_dir, vid_filename)
-
-    images = glob.glob(png_dir + "*.png")
-    frame = cv2.imread(images[0])
-    height, width, layers = frame.shape
-
-    video = cv2.VideoWriter(vid_filepath, -1, 25, (width, height))
-
-    for image in images:
-        video.write(cv2.imread(image))
-
-    video.release()
-
-    return vid_filename
-
+    fits_files = glob.glob(os.path.join(fits_dir, "*.fits"))
+    if fits_files:
+        for f in fits_files:
+            os.remove(f)
+        return True
+    return False
 
 def main():
     """
@@ -165,11 +142,9 @@ def main():
                            make_vid=args.video,
                            delete_fits=args.delete,
                            verbose=args.verbose)
-
     else:
         print("Error: Invalid fits dir")
         sys.exit(1)
-
     pass
 
 if __name__ == "__main__":

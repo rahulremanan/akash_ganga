@@ -25,7 +25,7 @@ import random
 import sys
 from enum import Enum, unique, auto
 # custom imports
-import fits_to_png
+import file_converter
 import execute_in_shell
 
 def string_to_bool(val):
@@ -129,7 +129,6 @@ def download_data(data_dir,
     return execute_in_shell.execute_in_shell(command=commands, 
                                              verbose=verbose)
 
-
 def unzip_tgz_files(tgz_dir, 
                     dest_dir, 
                     verbose=False):
@@ -145,10 +144,10 @@ def unzip_tgz_files(tgz_dir,
         print("Unzipping files")
 
     tgz_files = glob.glob(tgz_dir+"*tgz")
+    commands = []
     for f in tgz_files:
-        commands = ["tar xzf " + f + " -C "+dest_dir, "rm " + f]
+        commands.append(["tar xzf " + f + " -C "+dest_dir, "rm " + f])
     return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
-
 
 def convert_fits_to_png(fits_root_folder, 
                         fits_folders, 
@@ -167,7 +166,7 @@ def convert_fits_to_png(fits_root_folder,
     for fits_folder in fits_folders:
         fits_dir = os.path.join(fits_root_folder, fits_folder)
         try:
-            fits_to_png.fits_folder_to_png(fits_dir=fits_dir,
+            file_converter.fits_folder_to_png(fits_dir=fits_dir,
                                            make_vid=False,
                                            delete_fits=True,
                                            verbose=verbose)
@@ -185,8 +184,8 @@ def zip_folder(folder_dir, zipped_filepath, verbose=False):
     :return: Dictionary with two elements Output and Error
     """
     commands = ["zip -r {} {}".format(zipped_filepath, folder_dir)]
-    return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
-
+    return execute_in_shell.execute_in_shell(command=commands, 
+                                             verbose=verbose)
 
 def download_and_process_raw_files(root_dir, 
                                    verbose=False):
@@ -207,7 +206,6 @@ def download_and_process_raw_files(root_dir,
     fits_folders = ["ima_g", "ima_i", "ima_u", "ima_z", "ima_r"]
     unzipped_data_dir = os.path.join(raw_data_dir, "efigi-1.6")
     convert_fits_to_png(unzipped_data_dir, fits_folders, verbose)
-
 
 def make_folders_from_labels(root_dir, 
                              verbose=False, 
@@ -235,8 +233,7 @@ def make_folders_from_labels(root_dir,
         commands.append(['echo "Folders in {}/train/:"'.format(root_dir)])
         commands.append(["ls {}/train/".format(root_dir)])
     return execute_in_shell.execute_in_shell(command = commands, 
-				      verbose = verbose)
-
+				                                 verbose = verbose)
 
 def row_generator(filepath):
     """
@@ -450,19 +447,24 @@ def get_user_options():
                    default = [0.2],
                    type=float, 
                    nargs=1)
+    
     args = a.parse_args()   
+    
     return args  
 
 if __name__=="__main__":
     args = get_user_options()
     verbose = args.verbose[0]
+    
     if args.root_dir[0] == None:
         print ("Invalid root folder for processing the EFIGI data ... \
                \nPlease specify a valid root folder using root_dir argument ...")
         sys.exit(1)
+    
     if args.fetch_raw_data[0]:
         download_and_process_raw_files(root_dir=args.root_dir[0], \
                                        verbose=verbose)
+    
     image_folders = ["png","ima_g", "ima_i", "ima_u", "ima_z", "ima_r"]
     extensions =[None, "g","i","u","z","r"]
 

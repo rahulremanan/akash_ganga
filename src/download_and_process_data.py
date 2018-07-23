@@ -124,9 +124,10 @@ def download_data(data_dir,
 
     # adding download commands
     download_cmd = "wget -O {} {}"
-    commands += [download_cmd.format(tgz_files[i], data_urls[i])
-                 for i in range(len(tgz_files))]
-    return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
+    for i in range(len(tgz_files)):
+        commands.append([download_cmd.format(tgz_files[i], data_urls[i])])
+    return execute_in_shell.execute_in_shell(command=commands, 
+                                             verbose=verbose)
 
 
 def unzip_tgz_files(tgz_dir, 
@@ -144,9 +145,8 @@ def unzip_tgz_files(tgz_dir,
         print("Unzipping files")
 
     tgz_files = glob.glob(tgz_dir+"*tgz")
-    commands = []
     for f in tgz_files:
-        commands += ["tar xzf " + f + " -C "+dest_dir, "rm " + f]
+        commands = ["tar xzf " + f + " -C "+dest_dir, "rm " + f]
     return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
 
 
@@ -154,15 +154,15 @@ def convert_fits_to_png(fits_root_folder,
                         fits_folders, 
                         verbose=False):
     """
-
+    Converts all the fits files from the root fits folders into pngs
 
     :param fits_root_folder: Folder containing other folders with FITS folders
     :param fits_folders: list of folder names containing fits files
     :param verbose: takes a boolean value to set verbose level
-    :return:
+    :return: None
     """
     if verbose:
-        print("Unzipping files")
+        print("Converting FITS to PNGs ...")
 
     for fits_folder in fits_folders:
         fits_dir = os.path.join(fits_root_folder, fits_folder)
@@ -172,10 +172,7 @@ def convert_fits_to_png(fits_root_folder,
                                            delete_fits=True,
                                            verbose=verbose)
         except NameError:
-            fits_folder_to_png(fits_dir=fits_dir,
-                               make_vid=False,
-                               delete_fits=True,
-                               verbose=verbose)
+            print ("Unable to find fits to png function ...")
 
 
 def zip_folder(folder_dir, zipped_filepath, verbose=False):
@@ -184,8 +181,8 @@ def zip_folder(folder_dir, zipped_filepath, verbose=False):
 
     :param folder_dir: the dir of the folder to be zipped
     :param zipped_filepath: the filepath of the resultant zipped folder
-    :param verbose:
-    :return:
+    :param verbose: takes a boolean value to set verbose level
+    :return: Dictionary with two elements Output and Error
     """
     commands = ["zip -r {} {}".format(zipped_filepath, folder_dir)]
     return execute_in_shell.execute_in_shell(command=commands, verbose=verbose)
@@ -194,10 +191,11 @@ def zip_folder(folder_dir, zipped_filepath, verbose=False):
 def download_and_process_raw_files(root_dir, 
                                    verbose=False):
     """
+    Helper function to download files into a root dir and convert FITS to PNGs
 
-    :param root_dir:
-    :param verbose:
-    :return:
+    :param root_dir: the root dir for the data
+    :param verbose: takes a boolean value to set verbose level
+    :return: None
     """
 
     raw_data_dir = os.path.join(root_dir, "data/raw/")
@@ -214,13 +212,21 @@ def download_and_process_raw_files(root_dir,
 def make_folders_from_labels(root_dir, 
                              verbose=False, 
                              label_classes = None):
+    """
+    Makes training and validation folders based on class labels.
+
+    :param root_dir: The root dir where the data should placed
+    :param verbose: takes a boolean value to set verbose level
+    :return: Dictionary with two elements Output and Error
+    """
+
 
     if verbose:
         print("Make Organisational Folders")
 
     mk_train_fldr = "mkdir -p {}/train/".format(root_dir) + "{}"
     mk_val_fldr = "mkdir -p {}/validation/".format(root_dir) + "{}"
-    commands = []
+ 
     for label_class in label_classes:
         commands = [mk_train_fldr.format(label_class),
                      mk_val_fldr.format(label_class)]
@@ -228,7 +234,8 @@ def make_folders_from_labels(root_dir,
     if verbose:
         commands.append(['echo "Folders in {}/train/:"'.format(root_dir)])
         commands.append(["ls {}/train/".format(root_dir)])
-    execute_in_shell.execute_in_shell(command = commands, verbose = verbose)
+    return execute_in_shell.execute_in_shell(command = commands, 
+				      verbose = verbose)
 
 
 def row_generator(filepath):
@@ -384,22 +391,19 @@ def shuffle_data(train_folder = None,
     if verbose:
         print (train_class_dir +" has " + str(total_num)+" images.")
 
-    # Shuffle 20% files
-    number_of_validation = int(data_split*float(total_num)) # 20% validation
+    # Shuffle a portion of the data files
+    number_of_validation = int(data_split*float(total_num)) # data_split passses the percentage split for validation-train split
     files_to_move = random.sample(images, number_of_validation)
 
-    class_name = train_class_dir.split("/")[-1]
-
-    # Move 20% to the validation folder of the same class
+    # Move a fraction of the validation folder of the same class
     for file_dir in files_to_move:
       destination_dir = file_dir.split("/train/")[0]+"/validation/"+file_dir.split("/train/")[-1]
       if os.path.exists(destination_dir) !=True:
             make_folder(input_dir = destination_dir,
                         verbose = verbose)
       shutil.move(file_dir, destination_dir)
-
-    num_train_images = len(glob.glob(train_class_dir+"/*.png"))
-    num_val_images = len(glob.glob(destination_dir+"/*.png"))
+      num_train_images = len(glob.glob(train_class_dir+"/*.png"))
+      num_val_images = len(glob.glob(destination_dir+"/*.png"))
     if verbose:
         print ("After transfering {} images for validation \
                \n{} images will remain in the training folder ...".format(num_val_images, num_train_images))

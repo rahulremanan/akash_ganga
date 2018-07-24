@@ -1,41 +1,38 @@
 # !/usr/bin/python3.6
 # -*- coding: utf-8 -*-
 """
-Python script that enables to run underlying linux environment commands as an input list.
+Python script that enables to run underlying linux environment commands as an
+input list.
 Created on Sat Jul 21 22:48:11 2018
 
 @author: Dr. Rahul Remanan, Moad Computer (https://www.moad.computer)
 @support: info@moad.computer
 
 """
-
 import argparse
 import subprocess
 import sys
 
+
 def string_to_bool(val):
     """
-        A function that checks if an user argument is boolean or not.
-        
-        Example usage:
-            
-            
-                import argsparse
-            
-                a = argparse.ArgumentParser()
-                
-                a.add_argument("--some_bool_arg", 
-                   help = "Specify a boolean argument ...", 
-                   dest = "some_bool_arg", 
-                   required=False, 
-                   default=[True], 
-                   nargs=1, 
-                   type = string_to_bool)
-                
+    A function that checks if an user argument is boolean or not.
+
+    Example usage:
+
+            import argsparse
+
+            a = argparse.ArgumentParser()
+            a.add_argument("--some_bool_arg",
+               help = "Specify a boolean argument ...",
+               dest = "some_bool_arg",
+               required=False,
+               default=[True],
+               nargs=1,
+               type = string_to_bool)
+
             args = a.parse_args()
-            
             args = get_user_options()
-            
     """
     if val.lower() in ('yes', 'true', 't', 'y', '1', 'yeah', 'yup'):
         return True
@@ -43,7 +40,8 @@ def string_to_bool(val):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected ...')
-        
+    pass
+
 
 def execute_in_shell(command=None, verbose=False):
     """
@@ -96,41 +94,44 @@ def execute_in_shell(command=None, verbose=False):
         print('The argument command takes a list input ...')
     return {'Output': output, 'Error': error}
 
+
 def get_user_options():
     a = argparse.ArgumentParser()
-    
-    a.add_argument("--execute_shell", 
-                   help = "Specify if the commands should be passed to linux shell ...", 
-                   dest = "execute_shell", 
-                   required = True, 
-                   type=string_to_bool, 
+    help_str = "Specify if the commands should be passed to linux shell ..."
+    a.add_argument("--execute_shell",
+                   help=help_str,
+                   dest="execute_shell",
+                   required=True,
+                   type=string_to_bool,
                    nargs=1)
-    
-    a.add_argument("--command", 
-                   help = "Specify a list of commands to be passed on to the linux shell ...", 
-                   dest = "command", 
-                   required = True, 
-                   nargs=1)
-    
-    a.add_argument("--verbose", 
-                   help = "Specify verbose level ...", 
-                   dest = "verbose", 
-                   required = True, 
-                   type=string_to_bool, 
-                   nargs=1)
-    
-    args = a.parse_args()   
-    return args
 
-if __name__=="__main__":
+    help_str = "Specify list of commands to be passed onto the linux shell ..."
+    a.add_argument("--command",
+                   help=help_str,
+                   dest="command",
+                   required=True,
+                   nargs=1)
+
+    a.add_argument("--verbose",
+                   help="Specify verbose level ...",
+                   dest="verbose",
+                   required=True,
+                   type=string_to_bool,
+                   nargs=1)
+
+    arguments = a.parse_args()
+    return arguments
+
+
+if __name__ == "__main__":
     args = get_user_options()
     execute_shell = args.execute_shell[0]
-    if execute_shell ==True:
-        print ("Shell session initiated ...")
-        print (execute_in_shell(command = [str(args.command[0])],
-                                verbose = args.verbose[0]))
+    if execute_shell:
+        print("Shell session initiated ...")
+        print(execute_in_shell(command=[str(args.command[0])],
+                               verbose=args.verbose[0]))
     else:
-        print ("Nothing to do here ...")
-        print ("Try setting the --execute_in_shell flag to True ...")
-        print ("For more help, run with -h flag ...")
+        print("Nothing to do here ...")
+        print("Try setting the --execute_in_shell flag to True ...")
+        print("For more help, run with -h flag ...")
         sys.exit(1)

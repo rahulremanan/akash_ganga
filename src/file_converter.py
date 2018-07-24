@@ -12,7 +12,6 @@ usage: fits_to_png.py [-h] [--video] [-d] [-v] fits_dir
 Author: Avi Vajpeyi and Rahul Remanan
 """
 import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from astropy.io import fits
 import numpy as np
@@ -23,7 +22,10 @@ import argparse
 # custom import
 import create_video
 
-def fits_to_png(fits_fn, 
+matplotlib.use('Agg')
+
+
+def fits_to_png(fits_fn,
                 delete_fits=False):
     """
     Converts the FITS file into a PNG image.
@@ -59,9 +61,10 @@ def fits_to_png(fits_fn,
         os.remove(fits_fn)
     pass
 
+
 def fits_folder_to_png(fits_dir,
-                       make_vid=False, 
-                       delete_fits=False, 
+                       make_vid=False,
+                       delete_fits=False,
                        verbose=False):
     """
     Converts all the FITS file in a dir to PNG images. Can also make a movie of
@@ -94,6 +97,7 @@ def fits_folder_to_png(fits_dir,
             print("Successfully saved video")
     pass
 
+
 def delete_fits_from_folder(fits_dir):
     """
     Deletes the FITS files from fits_dir
@@ -106,6 +110,7 @@ def delete_fits_from_folder(fits_dir):
             os.remove(f)
         return True
     return False
+
 
 def main():
     """
@@ -146,6 +151,7 @@ def main():
         print("Error: Invalid fits dir")
         sys.exit(1)
     pass
+
 
 if __name__ == "__main__":
     main()

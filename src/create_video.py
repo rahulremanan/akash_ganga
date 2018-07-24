@@ -15,6 +15,7 @@ import glob
 import cv2
 import os
 
+
 def make_movie_from_png(png_dir, delete_pngs=False):
     """
     Takes PNG image files from a dir and combines them to make a movie
@@ -42,6 +43,7 @@ def make_movie_from_png(png_dir, delete_pngs=False):
 
         return True
     return False
+
 
 def main():
     """
@@ -75,6 +77,7 @@ def main():
         print("Error: Invalid png dir")
         sys.exit(1)
     pass
+
 
 if __name__ == "__main__":
     main()

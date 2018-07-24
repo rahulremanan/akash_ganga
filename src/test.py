@@ -1,7 +1,9 @@
 import argparse
 
+
 def test():
     print("IN TEST")
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -9,6 +11,8 @@ def main():
                         action="store_true")
     args = parser.parse_args()
     if args.verbose:
-        print ("verbosity turned on")
+        print("verbosity turned on")
 
-main()
+
+if __name__ == "__main__":
+    main()

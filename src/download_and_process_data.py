@@ -18,8 +18,8 @@ Read more about de Vaucouleurs class: https://github.com/rahulremanan/akash_gang
     t_val < -3 is classified as elliptical galaxy.
     -3 <= t_val < 0 is classified as lenticular galaxy.
     0 <= t_val < 9 is classified as spiral galaxy.
-    9 <= t_val <= 10 is classifier as irreugular galaxy.
-    t_val = 11 is classfied as a dwarf galaxy.
+    9 <= t_val <= 10 is classified as irregular galaxy.
+    t_val = 11 is classified as a dwarf galaxy.
     
 Example usage:
     $ python3 download_and_process_data.py --root_dir /home/rahulremanan/EFIGI \

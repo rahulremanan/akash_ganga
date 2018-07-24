@@ -226,7 +226,7 @@ def make_folders_from_labels(root_dir,
 
     mk_train_fldr = "mkdir -p {}/train/".format(root_dir) + "{}"
     mk_val_fldr = "mkdir -p {}/validation/".format(root_dir) + "{}"
- 
+
     for label_class in label_classes:
         commands = [mk_train_fldr.format(label_class),
                     mk_val_fldr.format(label_class)]
@@ -287,7 +287,7 @@ def move_files_according_to_txt(txt_filepath=None,
         try:
             image_class = image_class.name
         except:
-            print ("Failed to process image: {}".format(image_fname))
+            print("Failed to process image: {}".format(image_fname))
 
         # move image from curr dir to new dir
         current_image_path = os.path.join(str(data_dir), str(image_dir),
@@ -365,8 +365,8 @@ def check_class(t_val):
     return None
 
 
-def make_folder(input_dir = None, 
-                verbose = False):
+def make_folder(input_dir=None,
+                verbose=False):
     try:
         if not os.path.exists(input_dir):
             os.makedirs(input_dir)
@@ -389,11 +389,11 @@ def shuffle_data(train_folder=None,
                   "split of {}% ... ".format(data_split*100))
     else:
         if verbose:
-            print ('Please input a data_split value between 0 and 1 ...')
+            print('Please input a data_split value between 0 and 1 ...')
         data_split = 0.2
         if verbose:
-            print ('Training data generated using default train-validation '
-                   'split of 20% ...')
+            print('Training data generated using default train-validation '
+                  'split of 20% ...')
 
     subfolders = [f.path for f in os.scandir(train_folder) if f.is_dir()]
 
@@ -404,20 +404,22 @@ def shuffle_data(train_folder=None,
         images = glob.glob(train_class_dir+"/*.png")
         total_num = len(images)
         if verbose:
-            print (train_class_dir +" has " + str(total_num)+" images.")
+            print(train_class_dir + " has " + str(total_num)+" images.")
 
         # Shuffle a portion of the data files
         number_of_validation = int(data_split*float(total_num))
         # data_split passses the percentage split for validation-train split
         files_to_move = random.sample(images, number_of_validation)
 
+        num_train_images = 0
+        num_val_images = 0
         # Move a fraction of the validation folder of the same class
         for file_dir in files_to_move:
             destination_dir = file_dir.split("/train/")[0]+"/validation/" + \
                               file_dir.split("/train/")[-1]
             if not os.path.exists(destination_dir):
                 make_folder(input_dir=destination_dir,
-                            verbose =verbose)
+                            verbose=verbose)
             shutil.move(file_dir, destination_dir)
             num_train_images = len(glob.glob(train_class_dir+"/*.png"))
             num_val_images = len(glob.glob(destination_dir+"/*.png"))
@@ -430,66 +432,67 @@ def shuffle_data(train_folder=None,
 
 def get_user_options():
     a = argparse.ArgumentParser()
-    
-    a.add_argument("--root_dir", 
+
+    a.add_argument("--root_dir",
                    help="Specify the root directory ...",
                    dest="root_dir",
                    required=True,
-                   type=lambda x: is_valid_dir(a, x), 
+                   type=lambda x: is_valid_dir(a, x),
                    nargs=1)
-    
-    a.add_argument("--fetch_raw_data", 
+
+    a.add_argument("--fetch_raw_data",
                    help="Specify whether raw data should be downloaded "
                         "from EFIGI project website ...",
                    dest="fetch_raw_data",
                    required=True,
                    default=[True],
-                   type=string_to_bool, 
+                   type=string_to_bool,
                    nargs=1)
-    
-    a.add_argument("--verbose", 
+
+    a.add_argument("--verbose",
                    help="Specify versboe level ...",
                    dest="verbose",
                    required=False,
                    default=[True],
-                   type=string_to_bool, 
+                   type=string_to_bool,
                    nargs=1)
-    
-    a.add_argument("--create_train_data", 
+
+    a.add_argument("--create_train_data",
                    help="Specify whether to generate training data ...",
                    dest="create_train_data",
                    required=True,
                    default=[True],
-                   type=string_to_bool, 
+                   type=string_to_bool,
                    nargs=1)
-    
-    a.add_argument("--data_split", 
+
+    a.add_argument("--data_split",
                    help="Specify the validation:train split ...",
                    dest="data_split",
                    required=True,
                    default=[0.2],
-                   type=float, 
+                   type=float,
                    nargs=1)
 
     arguments = a.parse_args()
-    
+
     return arguments
+
 
 if __name__ == "__main__":
     args = get_user_options()
     verbose = args.verbose[0]
-    
+
     if args.root_dir[0] is None:
         print("Invalid root folder for processing the EFIGI data ...\n Please "
               "specify a valid root folder using root_dir argument ...")
         sys.exit(1)
-    
+
     if args.fetch_raw_data[0]:
         download_and_process_raw_files(root_dir=args.root_dir[0],
                                        verbose=verbose)
-    
+
     image_folders = ["png", "ima_g", "ima_i", "ima_u", "ima_z", "ima_r"]
-    extensions =[None, "g", "i", "u", "z", "r"]
+    extensions = [None, "g", "i", "u", "z", "r"]
 
     if args.create_train_data[0]:
         label_classes = [name for name, _ in T.__members__.items()]

@@ -20,6 +20,13 @@ Read more about de Vaucouleurs class:
     0 <= t_val < 9 is classified as spiral galaxy.
     9 <= t_val <= 10 is classifier as irreugular galaxy.
     t_val = 11 is classfied as a dwarf galaxy.
+    
+Example usage:
+    $ python3 download_and_process_data.py --root_dir /home/rahulremanan/EFIGI \
+                                           --fetch_raw_data True \
+                                           --create_train_data True \
+                                           --data_split 0.3 \
+                                           --verbose False
 
 @authors: Avi Vajpeyi and Rahul Remanan
 @support: info@moad.computer

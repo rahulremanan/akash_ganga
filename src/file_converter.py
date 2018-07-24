@@ -90,7 +90,7 @@ def fits_folder_to_png(fits_dir,
         if verbose and i > status_flag:
             status_flag += num_files * 0.1
             p_done = i / num_files * 100
-            print(str(round(p_done, 2)) + "% processed")
+            print(str(round(p_done, 0)) + "% processed")
 
     if make_vid:
         vid_made = create_video.make_movie_from_png(fits_dir)

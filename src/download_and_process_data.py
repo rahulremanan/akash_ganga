@@ -76,7 +76,7 @@ def is_valid_dir(parser, arg):
         try:
             parser.error("The folder %s does not exist ..." % arg)
             return None
-        except:
+        except NameError:
             if parser is not None:
                 print("No valid argument parser found")
                 print("The folder %s does not exist ..." % arg)
@@ -286,7 +286,7 @@ def move_files_according_to_txt(txt_filepath=None,
         image_class = check_class(attributes[1])
         try:
             image_class = image_class.name
-        except:
+        except NameError:
             print("Failed to process image: {}".format(image_fname))
 
         # move image from curr dir to new dir
@@ -302,7 +302,7 @@ def move_files_according_to_txt(txt_filepath=None,
         if os.path.exists(current_image_path):
             try:
                 shutil.move(current_image_path, dest_image_path)
-            except:
+            except FileNotFoundError:
                 if verbose:
                     print("Failed to move: {}".format(current_image_path))
         else:
@@ -315,7 +315,7 @@ def move_files_according_to_txt(txt_filepath=None,
                 print("Found a total of: " + str(count) + ": images " +
                       image_fname + "belonging to the image class: " +
                       image_class)
-            except:
+            except TypeError:
                 print("Failed processing image class {}".format(image_class))
 
 

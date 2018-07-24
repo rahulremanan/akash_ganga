@@ -15,10 +15,10 @@ Approximate Hubble class |E          |S0         |S0/a|Sa|Sa-b|Sb|Sb-c|Sc       
 
 Read more about de Vaucouleurs class: https://github.com/rahulremanan/akash_ganga/blob/master/journal_articles/deVaucouleurs_Global_Physical_Parameters_Of_Galaxies.ps
 
-    t_val < -3 is classified as elliptical galaxy.
-    -3 <= t_val < 0 is classified as lenticular galaxy.
-    0 <= t_val < 9 is classified as spiral galaxy.
-    9 <= t_val <= 10 is classified as irregular galaxy.
+    t_val < -3 is classified as an elliptical galaxy.
+    -3 <= t_val < 0 is classified as a lenticular galaxy.
+    0 <= t_val < 9 is classified as a spiral galaxy.
+    9 <= t_val <= 10 is classified as an irregular galaxy.
     t_val = 11 is classified as a dwarf galaxy.
     
 Example usage:

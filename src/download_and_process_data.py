@@ -7,10 +7,18 @@ based on the Galaxy type.
 
 The image labeling is done using the t-values.
 
-    t_val < -3 are classified elliptical galaxy.
-    -3 <= t_val < 0 are classified lenticular galaxy.
-    0 <= t_val < 10 is classified as spiral galaxy.
-    t_val = 10 is classifier as irreugular galaxy.
+The galaxy classification is based on the Numerical Hubble stage (https://en.wikipedia.org/wiki/Galaxy_morphological_classification):
+    
+Hubble stage (T) 	              |−6  |	−5 |	−4| −3 |	−2 |	−1 | 	0 	|  1 |	2  |	3   | 	4  | 5 	| 6  	| 7 	| 8 	 | 9 	|10 |	11
+de Vaucouleurs class            | cE |	E 	|E+  | S0−| S00| 	S0+| S0/a| 	Sa| Sab  |	Sb  | Sbc   | Sc  | Scd | Sd 	| Sdm  | Sm	|Im |	
+Approximate Hubble class   	  |     E 	     |       S0 	   |S0/a |	Sa| Sa-b |   Sb | Sb-c  |    Sc           |Sc-Irr| Irr I  | 
+
+Read more about de Vaucouleurs class: 
+
+    t_val < -3 is classified as elliptical galaxy.
+    -3 <= t_val < 0 is classified as lenticular galaxy.
+    0 <= t_val < 9 is classified as spiral galaxy.
+    9 <= t_val <= 10 is classifier as irreugular galaxy.
     t_val = 11 is classfied as a dwarf galaxy.
 
 @authors: Avi Vajpeyi and Rahul Remanan
@@ -341,9 +349,9 @@ def check_class(t_val):
         return T.ELLIPTICAL
     elif -3 <= t_val < 0:
         return T.LENTICULAR
-    elif 0 <= t_val < 10:
+    elif 0 <= t_val < 9:
         return T.SPIRAL
-    elif t_val == 10:
+    elif 9<= t_val <= 10:
         return T.IRREGULAR
     elif t_val == 11:
         return T.DWARF

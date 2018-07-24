@@ -9,9 +9,9 @@ The image labeling is done using the t-values.
 
 The galaxy classification is based on the numerical Hubble stage (https://en.wikipedia.org/wiki/Galaxy_morphological_classification):
     
-Hubble stage (T) 	        |−6 |−5 |−4 |−3 |−2 |−1 |0   |1 |2   |3 |4   |5 |6  |7 |8     |9 |10 |11|
-de Vaucouleurs class        |cE |E  | E+|S0−|S00|S0+|S0/a|Sa|Sab |Sb|Sbc |Sc|Scd|Sd|Sdm   |Sm|Im |  |
-Approximate Hubble class    |E	        |S0         |S0/a|Sa|Sa-b|Sb|Sb-c|Sc       |Sc-Irr|Irr I |  |
+Hubble stage (T) 	           |−6 |−5 |−4 |−3 |−2 |−1 |0   |1 |2   |3 |4   |5 |6  |7 |8     |9 |10 |11|
+de Vaucouleurs class           |cE |E  | E+|S0−|S00|S0+|S0/a|Sa|Sab |Sb|Sbc |Sc|Scd|Sd|Sdm   |Sm|Im |  |
+Approximate Hubble class       |E	       |S0         |S0/a|Sa|Sa-b|Sb|Sb-c|Sc       |Sc-Irr|Irr I |  |
 
 Read more about de Vaucouleurs class: https://github.com/rahulremanan/akash_ganga/blob/master/journal_articles/deVaucouleurs_Global_Physical_Parameters_Of_Galaxies.ps
 

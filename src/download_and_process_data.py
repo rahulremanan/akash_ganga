@@ -17,9 +17,9 @@ Read more about de Vaucouleurs class: https://github.com/rahulremanan/akash_gang
 
     t_val < -3 is classified as an elliptical galaxy.
     -3 <= t_val < 0 is classified as a lenticular galaxy.
-    0 <= t_val < 9 is classified as a spiral galaxy.
-    9 <= t_val <= 10 is classified as an irregular galaxy.
-    t_val = 11 is classified as a dwarf galaxy.
+    0 <= t_val < 10 is classified as a spiral galaxy.
+    t_val == 10 is classified as a magellanic irregular galaxy.
+    t_val == 11 is classified as a compact galaxy.
     
 Example usage:
     $ python3 download_and_process_data.py --root_dir /home/rahulremanan/EFIGI \
@@ -343,7 +343,7 @@ class T(Enum):
     LENTICULAR = auto()
     SPIRAL = auto()
     IRREGULAR = auto()
-    DWARF = auto()
+    COMPACT = auto()
 
     def __str__(self):
         """
@@ -368,12 +368,12 @@ def check_class(t_val):
         return T.ELLIPTICAL
     elif -3 <= t_val < 0:
         return T.LENTICULAR
-    elif 0 <= t_val < 9:
+    elif 0 <= t_val < 10:
         return T.SPIRAL
-    elif 9<= t_val <= 10:
+    elif t_val == 10:
         return T.IRREGULAR
     elif t_val == 11:
-        return T.DWARF
+        return T.COMPACT
     else:
         print("Error: Unexpected range for t_val {} ...".format(t_val))
         # raise exception
